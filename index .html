@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>pzlmgm</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --tile-bg: #ccabd1;
+      --tile-bg-alt: #343c56;
+      --primary-text: #f7f7f7;
+      --accent: #90bade;
+      --accent-soft: #ffe8a3;
+      --error: #ff4d6a;
+      --success: #5bd17f;
+      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.35);
+      --font-main: "Roboto Condensed", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: var(--font-main);
+      background: #000;
+      color: var(--primary-text);
+    }
+    body { display: flex; align-items: stretch; justify-content: center; }
+    .app-root {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-text);
+    }
+    .start-screen {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: url("images/startbg.png") center/cover no-repeat fixed;
+      padding: 24px;
+    }
+    .start-overlay {
+      position: relative;
+      backdrop-filter: blur(6px);
+      background: radial-gradient(circle at top left, rgba(246,206,216,0.85), rgba(246,206,216,0.85));
+      border-radius: 24px;
+      padding: 32px 24px;
+      box-shadow: var(--shadow-soft);
+      max-width: 460px;
+      width: 100%;
+    }
+    .start-title {
+      font-size: 32px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: #2c2107;
+      margin-bottom: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .start-subtitle {
+      font-size: 20px;
+      color: #2c2107;
+      line-height: 1.5;
+      opacity: 0.88;
+      margin-bottom: 24px;
+    }
+    .start-highlight {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #2c2107;
+      font-size: 16px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      opacity: 0.9;
+      margin-bottom: 16px;
+      background: rgba(0,0,0,0.3);
+    }
+    .start-button {
+      margin-top: 8px;
+      width: 100%;
+      max-width: 260px;
+      font-size: 20px;
+      padding: 12px 20px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #b4be6c, #a3b18a);
+      color: #2c2107;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    }
+    .start-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.55);
+      filter: brightness(1.04);
+    }
+    .start-button:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    }
+    .start-footer { margin-top: 20px; font-size: 16px; opacity: 0.8; color: #2c2107;}
+    .game-screen {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: url("images/mainbg.png") center/cover fixed no-repeat;
+      padding: 16px;
+    }
+    .game-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 95vw;
+      min-height: 90vh;
+      height: 95vh;
+      background: linear-gradient(145deg, rgba(227,198,247,0.94), rgba(248,211,232,0.96));
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+    }
+    .top-bar {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px 8px;
+    }
+    .progress {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(20, 19, 36, 0.85);
+      border: 1px solid rgba(255,255,255,0.16);
+    }
+    .progress-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      border: 2px solid var(--accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      line-height: 1;
+      color: var(--accent);
+    }
+    .progress-text {
+      font-size: 20px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .sound-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.4);
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.4);
+    }
+    .sound-toggle:hover {
+      background: rgba(0,0,0,0.68);
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.55);
+    }
+    .sound-toggle:active {
+      transform: translateY(1px) scale(0.96);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+    }
+    .sound-icon { font-size: 24px; }
+    .game-field {
+      position: relative;
+      flex: 1;
+      padding: 10px 18px 18px;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+    .image-area {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #000;
+      flex: 1;
+      display: flex;
+    }
+    .puzzle-image-wrapper {
+      position: relative;
+      flex: 1;
+      background: url("images/puzzlepicture.png") center/cover no-repeat;
+    }
+    .tiles-grid {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 0;
+    }
+    @media (max-width: 768px) {
+      .game-field { padding: 8px 10px 14px; }
+      .progress-text { font-size: 18px; }
+    }
+    .puzzle-tile {
+      position: relative;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      cursor: pointer;
+      perspective: 1000px;
+      background: var(--tile-bg);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, opacity 0.2s ease;
+      overflow: visible;
+    }
+    .puzzle-tile:nth-child(odd) { background: var(--tile-bg-alt); }
+    .puzzle-tile-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 20px;
+      line-height: 1.25;
+      color: var(--primary-text);
+      background:
+        radial-gradient(circle at 20% 0%, rgba(255,255,255,0.16), transparent 55%),
+        radial-gradient(circle at 80% 100%, rgba(0,0,0,0.6), transparent 55%),
+        linear-gradient(135deg, rgba(255,255,255,0.04), rgba(0,0,0,0.4));
+      box-shadow: 0 12px 28px rgba(0,0,0,0.9);
+    }
+    .puzzle-tile[data-index="0"]  .puzzle-tile-inner { border-radius: 24px 0 0 0; }
+    .puzzle-tile[data-index="3"]  .puzzle-tile-inner { border-radius: 0 24px 0 0; }
+    .puzzle-tile[data-index="8"]  .puzzle-tile-inner { border-radius: 0 0 0 24px; }
+    .puzzle-tile[data-index="11"] .puzzle-tile-inner { border-radius: 0 0 24px 0; }
+    .tile-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .tile-header {
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.85;
+    }
+    .tile-zoom-btn {
+      border: none;
+      border-radius: 999px;
+      width: 26px;
+      height: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+    }
+    .tile-zoom-btn:hover {
+      background: rgba(0,0,0,0.7);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.8);
+    }
+    .tile-zoom-btn:active {
+      transform: translateY(1px) scale(0.95);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.7);
+    }
+    .tile-question {
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+    .tile-input {
+      width: 100%;
+      font-size: 20px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.24);
+      background: rgba(0,0,0,0.35);
+      color: var(--primary-text);
+      outline: none;
+      margin-bottom: 6px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .tile-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(255,204,77,0.7);
+      background: rgba(0,0,0,0.5);
+    }
+    .tile-button {
+      align-self: flex-end;
+      font-size: 20px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #ffb347, #ffcc4d);
+      color: #2c2107;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
+    }
+    .tile-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.75);
+      filter: brightness(1.03);
+    }
+    .tile-button:active {
+      transform: translateY(1px) scale(0.97);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.55);
+    }
+    @media (max-width: 640px) {
+      .tile-header { font-size: 18px; }
+      .tile-question { font-size: 20px; }
+      .tile-input,
+      .tile-button { font-size: 18px; }
+    }
+    .puzzle-tile-inner::before,
+    .puzzle-tile-inner::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+    }
+    .puzzle-tile[data-index="0"] .puzzle-tile-inner::before,
+    .puzzle-tile[data-index="3"] .puzzle-tile-inner::before,
+    .puzzle-tile[data-index="8"] .puzzle-tile-inner::after,
+    .puzzle-tile[data-index="11"] .puzzle-tile-inner::after {}
+    .puzzle-tile[data-top="tab"] .puzzle-tile-inner::before,
+    .puzzle-tile[data-top="blank"] .puzzle-tile-inner::before {
+      width: 32px;
+      height: 32px;
+      top: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .puzzle-tile[data-top="tab"] .puzzle-tile-inner::before {
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), transparent 70%),
+        linear-gradient(135deg, #3a4160, #202438);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.7);
+    }
+    .puzzle-tile[data-top="blank"] .puzzle-tile-inner::before {
+      background: #111423;
+      box-shadow: inset 0 0 6px rgba(0,0,0,0.8);
+    }
+    .puzzle-tile[data-bottom="tab"] .puzzle-tile-inner::after,
+    .puzzle-tile[data-bottom="blank"] .puzzle-tile-inner::after {
+      width: 32px;
+      height: 32px;
+      bottom: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .puzzle-tile[data-bottom="tab"] .puzzle-tile-inner::after {
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), transparent 70%),
+        linear-gradient(135deg, #3a4160, #202438);
+      box-shadow: 0 -4px 8px rgba(0,0,0,0.7);
+    }
+    .puzzle-tile[data-bottom="blank"] .puzzle-tile-inner::after {
+      background: #111423;
+      box-shadow: inset 0 0 6px rgba(0,0,0,0.8);
+    }
+    .puzzle-tile[data-top="none"] .puzzle-tile-inner::before,
+    .puzzle-tile[data-bottom="none"] .puzzle-tile-inner::after {
+      display: none;
+    }
+    .puzzle-tile::before,
+    .puzzle-tile::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+    }
+    .puzzle-tile[data-left="tab"]::before,
+    .puzzle-tile[data-left="blank"]::before {
+      width: 32px;
+      height: 32px;
+      left: -16px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .puzzle-tile[data-left="tab"]::before {
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), transparent 70%),
+        linear-gradient(135deg, #3a4160, #202438);
+      box-shadow: 4px 0 8px rgba(0,0,0,0.75);
+    }
+    .puzzle-tile[data-left="blank"]::before {
+      background: #111423;
+      box-shadow: inset 4px 0 6px rgba(0,0,0,0.7);
+    }
+    .puzzle-tile[data-right="tab"]::after,
+    .puzzle-tile[data-right="blank"]::after {
+      width: 32px;
+      height: 32px;
+      right: -16px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .puzzle-tile[data-right="tab"]::after {
+      background:
+        radial-gradient(circle at 70% 30%, rgba(255,255,255,0.25), transparent 70%),
+        linear-gradient(45deg, #3a4160, #202438);
+      box-shadow: -4px 0 8px rgba(0,0,0,0.75);
+    }
+    .puzzle-tile[data-right="blank"]::after {
+      background: #111423;
+      box-shadow: inset -4px 0 6px rgba(0,0,0,0.7);
+    }
+    .puzzle-tile[data-left="none"]::before,
+    .puzzle-tile[data-right="none"]::after {
+      display: none;
+    }
+    .puzzle-tile:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 14px 32px rgba(0,0,0,0.95);
+    }
+    .puzzle-tile.disabled {
+      cursor: default;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(0) scale(0.96);
+      box-shadow: none;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .puzzle-tile.flipping {
+      animation: tileFlip 0.42s ease forwards;
+    }
+    @keyframes tileFlip {
+      0%   { transform: rotateY(0deg); }
+      40%  { transform: rotateY(90deg); }
+      100% { transform: rotateY(90deg); opacity: 0; }
+    }
+    .puzzle-tile.wiggle {
+      animation: tileWiggle 0.3s ease;
+    }
+    @keyframes tileWiggle {
+      0%   { transform: translateX(0); }
+      20%  { transform: translateX(-4px); }
+      40%  { transform: translateX(4px); }
+      60%  { transform: translateX(-2px); }
+      80%  { transform: translateX(2px); }
+      100% { transform: translateX(0); }
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 80;
+      padding: 16px;
+    }
+    .overlay.visible { display: flex; }
+    .overlay-card {
+      background: radial-gradient(circle at top left, #3c1b28, #170910);
+      border-radius: 18px;
+      padding: 22px 18px 18px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.7);
+    }
+    .overlay-title {
+      font-size: 24px;
+      margin-bottom: 8px;
+      color: var(--error);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .overlay-text {
+      font-size: 20px;
+      opacity: 0.9;
+      margin-bottom: 18px;
+    }
+    .overlay-button {
+      font-size: 20px;
+      padding: 8px 22px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: #fff;
+      color: #5a0b1d;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.5);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    .overlay-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 32px rgba(0,0,0,0.6);
+    }
+    .overlay-button:active {
+      transform: translateY(1px) scale(0.97);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.45);
+    }
+    .final-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+      background: radial-gradient(circle at top, rgba(0,0,0,0.2), rgba(0,0,0,0.85));
+      z-index: 100;
+      overflow: hidden;
+    }
+    .final-overlay.visible { display: flex; }
+    .final-content {
+      position: relative;
+      z-index: 2;
+      max-width: 460px;
+      width: 100%;
+      padding: 24px 22px 18px;
+      border-radius: 22px;
+      text-align: center;
+      background: radial-gradient(circle at top left, rgba(40,28,7,0.96), rgba(10,7,3,0.98));
+      box-shadow: 0 20px 60px rgba(0,0,0,0.85);
+      color: var(--accent-soft);
+    }
+    .final-title {
+      font-size: 34px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin-bottom: 10px;
+    }
+    .final-subtitle {
+      font-size: 20px;
+      margin-bottom: 18px;
+      opacity: 0.95;
+    }
+    .final-button {
+      font-size: 20px;
+      padding: 10px 26px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: #fff;
+      color: #3a2706;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    .final-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.85);
+    }
+    .final-button:active {
+      transform: translateY(1px) scale(0.97);
+      box-shadow: 0 8px 22px rgba(0,0,0,0.7);
+    }
+    .firework {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    @keyframes explode {
+      0% { transform: scale(0.1); opacity: 1; }
+      70% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.2); opacity: 0; }
+    }
+    .zoom-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 90;
+      padding: 16px;
+    }
+    .zoom-overlay.visible {
+      display: flex;
+    }
+    .zoom-card {
+      position: relative;
+      max-width: 620px;
+      width: 100%;
+      background: radial-gradient(circle at top left, #22263f, #101226);
+      border-radius: 24px;
+      padding: 20px 22px 18px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.85);
+      color: var(--primary-text);
+    }
+    .zoom-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .zoom-title {
+      font-size: 22px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0.9;
+    }
+    .zoom-close {
+      border: none;
+      border-radius: 999px;
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+    }
+    .zoom-close:hover {
+      background: rgba(0,0,0,0.8);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.8);
+    }
+    .zoom-close:active {
+      transform: translateY(1px) scale(0.95);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.7);
+    }
+    .zoom-question {
+      font-size: 26px;
+      margin-bottom: 14px;
+    }
+    .zoom-input {
+      width: 100%;
+      font-size: 22px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.28);
+      background: rgba(0,0,0,0.45);
+      color: var(--primary-text);
+      outline: none;
+      margin-bottom: 12px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .zoom-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(255,204,77,0.7);
+      background: rgba(0,0,0,0.65);
+    }
+    .zoom-button {
+      font-size: 20px;
+      padding: 8px 20px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #ffb347, #ffcc4d);
+      color: #2c2107;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.7);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
+    }
+    .zoom-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 32px rgba(0,0,0,0.8);
+      filter: brightness(1.03);
+    }
+    .zoom-button:active {
+      transform: translateY(1px) scale(0.97);
+      box-shadow: 0 7px 18px rgba(0,0,0,0.65);
+    }
+    .free-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .free-overlay.visible { display: flex; }
+    .free-mode-img-wrapper {
+      border-radius: 24px;
+      box-shadow: 0 16px 54px rgba(0,0,0,0.88);
+      overflow: hidden;
+      background: #000;
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .free-mode-img-wrapper img {
+      display: block;
+      max-width: 90vw;
+      max-height: 90vh;
+      width: auto;
+      height: auto;
+      border-radius: 24px;
+    }
+    .free-mode-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      color: #fff;
+      font-size: 22px;
+      border-radius: 22px;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.7);
+    }
+    .free-mode-close:hover {
+      background: rgba(0,0,0,0.88);
+    }
+    @media (max-width: 700px) {
+      .free-mode-img-wrapper img { max-width: 98vw; max-height: 60vh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-root">
+    <section class="start-screen" id="startScreen">
+      <div class="start-overlay">
+        <div class="start-highlight">Мягкий знак после шипящих</div>
+        <h1 class="start-title">Отгадай слова и открой картинку</h1>
+        <p class="start-subtitle"></p>
+        <button class="start-button" id="startButton">играть</button>
+        <div class="start-footer">
+          помни, что отгадки будут с шипящим звуком на конце
+        </div>
+      </div>
+    </section>
+    <section class="game-screen" id="gameScreen">
+      <div class="game-wrapper">
+        <div class="top-bar">
+          <div class="progress">
+            <div class="progress-check">✓</div>
+            <div class="progress-text" id="progressText">0 / 12</div>
+          </div>
+          <button class="sound-toggle" id="soundToggle" aria-label="Переключить звук">
+            <span class="sound-icon" id="soundIcon">🔊</span>
+          </button>
+        </div>
+        <div class="game-field">
+          <div class="image-area">
+            <div class="puzzle-image-wrapper">
+              <div class="tiles-grid" id="tilesGrid"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="overlay" id="errorOverlay">
+      <div class="overlay-card">
+        <div class="overlay-title" id="errorTitle">Неверно!</div>
+        <div class="overlay-text" id="errorText">
+         Попробуй ещё раз.
+        </div>
+        <button class="overlay-button" id="tryAgainButton">вернуться</button>
+      </div>
+    </div>
+    <div class="final-overlay" id="finalOverlay">
+      <div class="final-content">
+        <div class="final-title">Отлично!</div>
+        <div class="final-subtitle">
+         Здорово!
+        </div>
+        <button class="final-button" id="playAgainButton">Играть ещё раз.</button>
+        <button class="final-button" id="freeModeButton" style="margin-top:14px; background: #efe7f7; color: #2d1545; box-shadow:0 4px 22px rgba(130,90,180,.28)">free mode</button>
+      </div>
+    </div>
+    <div class="free-overlay" id="freeOverlay">
+      <div class="free-mode-img-wrapper">
+        <button class="free-mode-close" id="freeCloseBtn" title="Закрыть">✕</button>
+        <img src="images/puzzlepicture.png" alt="Puzzle image (free mode)" />
+      </div>
+    </div>
+    <div class="zoom-overlay" id="zoomOverlay">
+      <div class="zoom-card">
+        <div class="zoom-header">
+          <div class="zoom-title" id="zoomTitle">Задание</div>
+          <button class="zoom-close" id="zoomClose">✕</button>
+        </div>
+        <div class="zoom-question" id="zoomQuestion">Question text</div>
+        <input type="text" class="zoom-input" id="zoomInput" placeholder="впечатай ответ" autocomplete="off" />
+        <button class="zoom-button" id="zoomSubmit">ответить</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    const puzzles = [
+      { question: "Весенняя чёрная птица.",       answer: "грач" },
+      { question: "Ростом мал, да ускакал.",    answer: "мяч" },
+      { question: "Что за чудо? С потолка льётся дождиком вода.", answer: "душ" },
+      { question: "Маленький рост, длинный хвост,серая шубка, острые зубки.", answer: "мышь" },
+      { question: "Зимой нет теплей, летом нет холодней.",      answer: "печь" },
+      { question: "Чёрный Ивашка, деревянная рубашка, где носом ведёт, там заметку кладёт.",    answer: "карандаш" },
+      { question: "Антоним слова день",          answer: "ночь" },
+      { question: "Кто лечит нас от всех болезней?",     answer: "врач" },
+      { question: "От дождя меня надень, и ходи хоть целый день",         answer: "плащ" },
+      { question: "Синоним слова поддержка",         answer: "помощь" },
+      { question: "Оружие, которым пользовались сказочные богатыри.",      answer: "меч" },
+      { question: "У кого шубка с иголками?",          answer: "ёж" }
+    ];
+    const TOTAL_TILES = puzzles.length;
+    const startScreen = document.getElementById("startScreen");
+    const gameScreen  = document.getElementById("gameScreen");
+    const startButton = document.getElementById("startButton");
+    const tilesGrid      = document.getElementById("tilesGrid");
+    const progressTextEl = document.getElementById("progressText");
+    const errorOverlay   = document.getElementById("errorOverlay");
+    const errorTitleEl   = document.getElementById("errorTitle");
+    const errorTextEl    = document.getElementById("errorText");
+    const tryAgainButton = document.getElementById("tryAgainButton");
+    const finalOverlay   = document.getElementById("finalOverlay");
+    const playAgainButton= document.getElementById("playAgainButton");
+    const soundToggleBtn = document.getElementById("soundToggle");
+    const soundIconEl    = document.getElementById("soundIcon");
+    const zoomOverlay  = document.getElementById("zoomOverlay");
+    const zoomTitleEl  = document.getElementById("zoomTitle");
+    const zoomQuestionEl = document.getElementById("zoomQuestion");
+    const zoomInputEl  = document.getElementById("zoomInput");
+    const zoomCloseBtn = document.getElementById("zoomClose");
+    const zoomSubmitBtn= document.getElementById("zoomSubmit");
+    let soundEnabled = true;
+    const flipSound  = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
+    const errorSound = new Audio("https://actions.google.com/sounds/v1/cartoon/goofy_spring_bounces.ogg");
+    const winSound   = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+    flipSound.volume  = 0.25;
+    errorSound.volume = 0.4;
+    winSound.volume   = 0.25;
+    function playSound(audio) {
+      if (!soundEnabled || !audio) return;
+      try {
+        audio.currentTime = 0;
+        audio.play();
+      } catch (e) {}
+    }
+    function playErrorSoundLimited() {
+      if (!soundEnabled) return;
+      try {
+        errorSound.currentTime = 0;
+        errorSound.play();
+        setTimeout(() => {
+          try {
+            errorSound.pause();
+            errorSound.currentTime = 0;
+          } catch (e) {}
+        }, 2000);
+      } catch (e) {}
+    }
+    let openedTiles   = 0;
+    let wrongAttempts = 0;
+    let lastErrorTile = null;
+    function updateProgress() {
+      progressTextEl.textContent = `${openedTiles} / ${TOTAL_TILES}`;
+    }
+    const puzzleEdges = [
+      { top:"none", bottom:"tab",   left:"none",  right:"tab"   },
+      { top:"none", bottom:"blank", left:"blank", right:"tab"   },
+      { top:"none", bottom:"tab",   left:"blank", right:"tab"   },
+      { top:"none", bottom:"blank", left:"blank", right:"none"  },
+      { top:"blank",bottom:"tab",   left:"none",  right:"tab"   },
+      { top:"tab",  bottom:"blank", left:"blank", right:"tab"   },
+      { top:"blank",bottom:"tab",   left:"blank", right:"tab"   },
+      { top:"tab",  bottom:"blank", left:"blank", right:"none"  },
+      { top:"blank",bottom:"none",  left:"none",  right:"tab"   },
+      { top:"tab",  bottom:"none",  left:"blank", right:"tab"   },
+      { top:"blank",bottom:"none",  left:"blank", right:"tab"   },
+      { top:"tab",  bottom:"none",  left:"blank", right:"none"  }
+    ];
+    let zoomActive = false;
+    let zoomTileIndex = null;
+    function openZoom(index) {
+      zoomTileIndex = index;
+      zoomActive = true;
+      const puzzle = puzzles[index];
+      zoomTitleEl.textContent = `Задание ${index + 1}`;
+      zoomQuestionEl.textContent = puzzle.question;
+      zoomInputEl.value = "";
+      zoomOverlay.classList.add("visible");
+      setTimeout(() => zoomInputEl.focus(), 50);
+    }
+    function closeZoom() {
+      zoomActive = false;
+      zoomTileIndex = null;
+      zoomOverlay.classList.remove("visible");
+    }
+    function createTiles() {
+      tilesGrid.innerHTML = "";
+      puzzles.forEach((puzzle, index) => {
+        const edges = puzzleEdges[index] || {top:"none",bottom:"none",left:"none",right:"none"};
+        const tile = document.createElement("div");
+        tile.className = "puzzle-tile";
+        tile.dataset.index  = String(index);
+        tile.dataset.top    = edges.top;
+        tile.dataset.bottom = edges.bottom;
+        tile.dataset.left   = edges.left;
+        tile.dataset.right  = edges.right;
+        const inner = document.createElement("div");
+        inner.className = "puzzle-tile-inner";
+        const topRow = document.createElement("div");
+        topRow.className = "tile-top-row";
+        const header = document.createElement("div");
+        header.className = "tile-header";
+        header.textContent = `Задание ${index + 1}`;
+        const zoomBtn = document.createElement("button");
+        zoomBtn.className = "tile-zoom-btn";
+        zoomBtn.type = "button";
+        zoomBtn.textContent = "+";
+        topRow.appendChild(header);
+        topRow.appendChild(zoomBtn);
+        const q = document.createElement("div");
+        q.className = "tile-question";
+        q.textContent = puzzle.question;
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "tile-input";
+        input.placeholder = "впечатай ответ";
+        input.autocomplete = "off";
+        const btn = document.createElement("button");
+        btn.className = "tile-button";
+        btn.textContent = "ответить";
+        inner.appendChild(topRow);
+        inner.appendChild(q);
+        inner.appendChild(input);
+        inner.appendChild(btn);
+        tile.appendChild(inner);
+        tilesGrid.appendChild(tile);
+        function checkAndSubmit(valueFromZoom = null) {
+          const value = valueFromZoom !== null ? valueFromZoom : input.value;
+          if (!value.trim()) return;
+          const correct = checkAnswer(index, value);
+          if (correct) {
+            tile.classList.add("flipping");
+            playSound(flipSound);
+            setTimeout(() => {
+              tile.classList.add("disabled");
+              tile.style.pointerEvents = "none";
+            }, 380);
+            openedTiles++;
+            updateProgress();
+            if (openedTiles >= TOTAL_TILES) {
+              setTimeout(showFinalScreen, 600);
+            }
+            if (zoomActive && zoomTileIndex === index) {
+              closeZoom();
+            }
+          } else {
+            wrongAttempts++;
+            tile.classList.remove("wiggle");
+            void tile.offsetWidth;
+            tile.classList.add("wiggle");
+            lastErrorTile = tile;
+            playErrorSoundLimited();
+            if (wrongAttempts >= 3) {
+              showGameOver();
+            } else {
+              showErrorOverlay();
+            }
+          }
+        }
+        btn.addEventListener("click", () => checkAndSubmit());
+        input.addEventListener("keydown", e => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            checkAndSubmit();
+          }
+        });
+        zoomBtn.addEventListener("click", e => {
+          e.stopPropagation();
+          openZoom(index);
+        });
+      });
+    }
+    function normalizeAnswer(v) {
+      return v.trim().toLowerCase();
+    }
+    function checkAnswer(index, value) {
+      const puzzle = puzzles[index];
+      if (puzzle.answerCheck && typeof puzzle.answerCheck === "function") {
+        return puzzle.answerCheck(value);
+      }
+      if (!puzzle.answer) return false;
+      return normalizeAnswer(puzzle.answer.toString()) === normalizeAnswer(value);
+    }
+    function showErrorOverlay() {
+      errorTitleEl.textContent = "Неверно!";
+      errorTextEl.textContent  = "Попробуй ещё раз.";
+      tryAgainButton.textContent = "вернуться";
+      errorOverlay.classList.add("visible");
+    }
+    function hideErrorOverlay() {
+      errorOverlay.classList.remove("visible");
+      if (wrongAttempts < 3 && lastErrorTile) {
+        const input = lastErrorTile.querySelector(".tile-input");
+        if (input) input.focus();
+      }
+    }
+    function showGameOver() {
+      errorTitleEl.textContent = "Ой!";
+      errorTextEl.textContent  = "Ты слишком часто ошибался.";
+      tryAgainButton.textContent = "Попробуй ещё раз.";
+      errorOverlay.classList.add("visible");
+    }
+    function restartGameFromOverlay() {
+      errorOverlay.classList.remove("visible");
+      restartGame();
+    }
+    function showFinalScreen() {
+      finalOverlay.classList.add("visible");
+      spawnFireworks();
+      playSound(winSound);
+    }
+    function hideFinalScreen() {
+      finalOverlay.classList.remove("visible");
+    }
+    function restartGame() {
+      hideFinalScreen();
+      openedTiles   = 0;
+      wrongAttempts = 0;
+      lastErrorTile = null;
+      updateProgress();
+      createTiles();
+    }
+    function spawnFireworks() {
+      const overlay = finalOverlay;
+      const colors = [
+        "rgba(255,215,0,0.9)",
+        "rgba(255,239,170,0.9)",
+        "rgba(255,204,77,0.9)",
+        "rgba(255,255,255,0.9)"
+      ];
+      for (let i = 0; i < 18; i++) {
+        const fw = document.createElement("div");
+        fw.className = "firework";
+        const size = 40 + Math.random() * 70;
+        fw.style.width = size + "px";
+        fw.style.height = size + "px";
+        fw.style.background = `radial-gradient(circle, ${
+          colors[Math.floor(Math.random() * colors.length)]
+        } 0%, rgba(255,215,0,0) 60%)`;
+        fw.style.left = 10 + Math.random() * 80 + "%";
+        fw.style.top = 10 + Math.random() * 70 + "%";
+        const duration = 800 + Math.random() * 900;
+        fw.style.animation = `explode ${duration}ms ease-out forwards`;
+        fw.style.opacity = "0";
+        overlay.appendChild(fw);
+        setTimeout(() => overlay.removeChild(fw), duration + 100);
+      }
+    }
+    startButton.addEventListener("click", () => {
+      startScreen.style.display = "none";
+      gameScreen.style.display  = "flex";
+      openedTiles   = 0;
+      wrongAttempts = 0;
+      updateProgress();
+      createTiles();
+    });
+    tryAgainButton.addEventListener("click", () => {
+      if (wrongAttempts >= 3) {
+        restartGameFromOverlay();
+      } else {
+        hideErrorOverlay();
+      }
+    });
+    errorOverlay.addEventListener("click", e => {
+      if (e.target === errorOverlay) {
+        if (wrongAttempts >= 3) {
+          restartGameFromOverlay();
+        } else {
+          hideErrorOverlay();
+        }
+      }
+    });
+    playAgainButton.addEventListener("click", restartGame);
+    soundToggleBtn.addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      soundIconEl.textContent = soundEnabled ? "🔊" : "🔈";
+    });
+    zoomCloseBtn.addEventListener("click", closeZoom);
+    zoomOverlay.addEventListener("click", e => {
+      if (e.target === zoomOverlay) {
+        closeZoom();
+      }
+    });
+    zoomSubmitBtn.addEventListener("click", () => {
+      if (zoomTileIndex === null) return;
+      const tile = tilesGrid.querySelector(`.puzzle-tile[data-index="${zoomTileIndex}"]`);
+      if (!tile) return;
+      const value = zoomInputEl.value;
+      const puzzleIndex = zoomTileIndex;
+      const correct = checkAnswer(puzzleIndex, value);
+      if (correct) {
+        tile.classList.add("flipping");
+        playSound(flipSound);
+        setTimeout(() => {
+          tile.classList.add("disabled");
+          tile.style.pointerEvents = "none";
+        }, 380);
+        openedTiles++;
+        updateProgress();
+        if (openedTiles >= TOTAL_TILES) {
+          setTimeout(showFinalScreen, 600);
+        }
+        closeZoom();
+      } else {
+        wrongAttempts++;
+        tile.classList.remove("wiggle");
+        void tile.offsetWidth;
+        tile.classList.add("wiggle");
+        lastErrorTile = tile;
+        playErrorSoundLimited();
+        if (wrongAttempts >= 3) {
+          showGameOver();
+        } else {
+          showErrorOverlay();
+        }
+      }
+    });
+    zoomInputEl.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        zoomSubmitBtn.click();
+      }
+    });
+    const freeModeButton = document.getElementById("freeModeButton");
+    const freeOverlay    = document.getElementById("freeOverlay");
+    const freeCloseBtn   = document.getElementById("freeCloseBtn");
+    freeModeButton.addEventListener("click", function() {
+      freeOverlay.classList.add("visible");
+    });
+    freeCloseBtn.addEventListener("click", function() {
+      freeOverlay.classList.remove("visible");
+    });
+    freeOverlay.addEventListener("click", function(e) {
+      if (e.target === freeOverlay) freeOverlay.classList.remove("visible");
+    });
+    (function() {
+      const mark = "cmFkaWF0ZWFjaGVy"; 
+      const check = mark.split('').reduce((a,b)=>a+b.charCodeAt(0),0);
+    })();
+  </script>
+</body>
+</html>
