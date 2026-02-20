@@ -247,7 +247,7 @@
       padding: 10px 12px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: flex-start;
       font-size: 20px;
       line-height: 1.25;
       color: var(--primary-text);
@@ -265,7 +265,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
     }
     .tile-header {
       font-size: 20px;
@@ -287,66 +287,19 @@
       cursor: pointer;
       box-shadow: 0 4px 10px rgba(0,0,0,0.6);
       transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+      pointer-events: none; /* Клик обрабатывается всей плиткой */
     }
-    .tile-zoom-btn:hover {
+    .puzzle-tile:hover .tile-zoom-btn {
       background: rgba(0,0,0,0.7);
-      transform: translateY(-1px);
       box-shadow: 0 6px 14px rgba(0,0,0,0.8);
-    }
-    .tile-zoom-btn:active {
-      transform: translateY(1px) scale(0.95);
-      box-shadow: 0 3px 8px rgba(0,0,0,0.7);
     }
     .tile-question {
       font-size: 22px;
       margin-bottom: 6px;
     }
-    .tile-input {
-      width: 100%;
-      font-size: 20px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.24);
-      background: rgba(0,0,0,0.35);
-      color: var(--primary-text);
-      outline: none;
-      margin-bottom: 6px;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-    }
-    .tile-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(255,204,77,0.7);
-      background: rgba(0,0,0,0.5);
-    }
-    .tile-button {
-      align-self: flex-end;
-      font-size: 20px;
-      padding: 6px 16px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      background: linear-gradient(135deg, #ffb347, #ffcc4d);
-      color: #2c2107;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
-    }
-    .tile-button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 12px 28px rgba(0,0,0,0.75);
-      filter: brightness(1.03);
-    }
-    .tile-button:active {
-      transform: translateY(1px) scale(0.97);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.55);
-    }
     @media (max-width: 640px) {
       .tile-header { font-size: 18px; }
       .tile-question { font-size: 20px; }
-      .tile-input,
-      .tile-button { font-size: 18px; }
     }
     .puzzle-tile-inner::before,
     .puzzle-tile-inner::after {
@@ -482,7 +435,7 @@
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 80;
+      z-index: 150; /* Поднял z-index, чтобы ошибка была поверх лупы */
       padding: 16px;
     }
     .overlay.visible { display: flex; }
@@ -537,7 +490,7 @@
       justify-content: center;
       backdrop-filter: blur(6px);
       background: radial-gradient(circle at top, rgba(0,0,0,0.2), rgba(0,0,0,0.85));
-      z-index: 100;
+      z-index: 160;
       overflow: hidden;
     }
     .final-overlay.visible { display: flex; }
@@ -857,6 +810,7 @@
     const zoomInputEl  = document.getElementById("zoomInput");
     const zoomCloseBtn = document.getElementById("zoomClose");
     const zoomSubmitBtn= document.getElementById("zoomSubmit");
+    
     let soundEnabled = true;
     const flipSound  = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
     const errorSound = new Audio("https://actions.google.com/sounds/v1/cartoon/goofy_spring_bounces.ogg");
@@ -864,6 +818,7 @@
     flipSound.volume  = 0.25;
     errorSound.volume = 0.4;
     winSound.volume   = 0.25;
+    
     function playSound(audio) {
       if (!soundEnabled || !audio) return;
       try {
@@ -871,6 +826,7 @@
         audio.play();
       } catch (e) {}
     }
+    
     function playErrorSoundLimited() {
       if (!soundEnabled) return;
       try {
@@ -884,12 +840,15 @@
         }, 2000);
       } catch (e) {}
     }
+    
     let openedTiles   = 0;
     let wrongAttempts = 0;
     let lastErrorTile = null;
+    
     function updateProgress() {
       progressTextEl.textContent = `${openedTiles} / ${TOTAL_TILES}`;
     }
+    
     const puzzleEdges = [
       { top:"none", bottom:"tab",   left:"none",  right:"tab"   },
       { top:"none", bottom:"blank", left:"blank", right:"tab"   },
@@ -904,8 +863,10 @@
       { top:"blank",bottom:"none",  left:"blank", right:"tab"   },
       { top:"tab",  bottom:"none",  left:"blank", right:"none"  }
     ];
+    
     let zoomActive = false;
     let zoomTileIndex = null;
+    
     function openZoom(index) {
       zoomTileIndex = index;
       zoomActive = true;
@@ -916,11 +877,13 @@
       zoomOverlay.classList.add("visible");
       setTimeout(() => zoomInputEl.focus(), 50);
     }
+    
     function closeZoom() {
       zoomActive = false;
       zoomTileIndex = null;
       zoomOverlay.classList.remove("visible");
     }
+    
     function createTiles() {
       tilesGrid.innerHTML = "";
       puzzles.forEach((puzzle, index) => {
@@ -932,85 +895,57 @@
         tile.dataset.bottom = edges.bottom;
         tile.dataset.left   = edges.left;
         tile.dataset.right  = edges.right;
+        
         const inner = document.createElement("div");
         inner.className = "puzzle-tile-inner";
+        
         const topRow = document.createElement("div");
         topRow.className = "tile-top-row";
         const header = document.createElement("div");
         header.className = "tile-header";
         header.textContent = `Задание ${index + 1}`;
+        
         const zoomBtn = document.createElement("button");
         zoomBtn.className = "tile-zoom-btn";
         zoomBtn.type = "button";
         zoomBtn.textContent = "+";
+        
         topRow.appendChild(header);
         topRow.appendChild(zoomBtn);
+        
         const q = document.createElement("div");
         q.className = "tile-question";
         q.textContent = puzzle.question;
-        const input = document.createElement("input");
-        input.type = "text";
-        input.className = "tile-input";
-        input.placeholder = "впечатай ответ";
-        input.autocomplete = "off";
-        const btn = document.createElement("button");
-        btn.className = "tile-button";
-        btn.textContent = "ответить";
+
+        const hint = document.createElement("div");
+        hint.style.fontSize = "16px";
+        hint.style.opacity = "0.7";
+        hint.style.marginTop = "auto";
+        hint.style.textAlign = "center";
+        hint.style.textTransform = "uppercase";
+        hint.style.fontWeight = "bold";
+        hint.textContent = "Нажми, чтобы ответить";
+        
         inner.appendChild(topRow);
         inner.appendChild(q);
-        inner.appendChild(input);
-        inner.appendChild(btn);
+        inner.appendChild(hint);
+        
         tile.appendChild(inner);
         tilesGrid.appendChild(tile);
-        function checkAndSubmit(valueFromZoom = null) {
-          const value = valueFromZoom !== null ? valueFromZoom : input.value;
-          if (!value.trim()) return;
-          const correct = checkAnswer(index, value);
-          if (correct) {
-            tile.classList.add("flipping");
-            playSound(flipSound);
-            setTimeout(() => {
-              tile.classList.add("disabled");
-              tile.style.pointerEvents = "none";
-            }, 380);
-            openedTiles++;
-            updateProgress();
-            if (openedTiles >= TOTAL_TILES) {
-              setTimeout(showFinalScreen, 600);
-            }
-            if (zoomActive && zoomTileIndex === index) {
-              closeZoom();
-            }
-          } else {
-            wrongAttempts++;
-            tile.classList.remove("wiggle");
-            void tile.offsetWidth;
-            tile.classList.add("wiggle");
-            lastErrorTile = tile;
-            playErrorSoundLimited();
-            if (wrongAttempts >= 3) {
-              showGameOver();
-            } else {
-              showErrorOverlay();
-            }
+        
+        // Вешаем открытие зума на всю плитку целиком
+        tile.addEventListener("click", () => {
+          if (!tile.classList.contains("disabled")) {
+            openZoom(index);
           }
-        }
-        btn.addEventListener("click", () => checkAndSubmit());
-        input.addEventListener("keydown", e => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            checkAndSubmit();
-          }
-        });
-        zoomBtn.addEventListener("click", e => {
-          e.stopPropagation();
-          openZoom(index);
         });
       });
     }
+    
     function normalizeAnswer(v) {
       return v.trim().toLowerCase();
     }
+    
     function checkAnswer(index, value) {
       const puzzle = puzzles[index];
       if (puzzle.answerCheck && typeof puzzle.answerCheck === "function") {
@@ -1019,45 +954,53 @@
       if (!puzzle.answer) return false;
       return normalizeAnswer(puzzle.answer.toString()) === normalizeAnswer(value);
     }
+    
     function showErrorOverlay() {
       errorTitleEl.textContent = "Неверно!";
       errorTextEl.textContent  = "Попробуй ещё раз.";
       tryAgainButton.textContent = "вернуться";
       errorOverlay.classList.add("visible");
     }
+    
     function hideErrorOverlay() {
       errorOverlay.classList.remove("visible");
-      if (wrongAttempts < 3 && lastErrorTile) {
-        const input = lastErrorTile.querySelector(".tile-input");
-        if (input) input.focus();
+      if (wrongAttempts < 3 && zoomActive) {
+        setTimeout(() => zoomInputEl.focus(), 50);
       }
     }
+    
     function showGameOver() {
-      errorTitleEl.textContent = "Ой!";
-      errorTextEl.textContent  = "Ты слишком часто ошибался.";
-      tryAgainButton.textContent = "Попробуй ещё раз.";
+      errorTitleEl.textContent = "Ой-ой!";
+      errorTextEl.textContent  = "Слишком много ошибок. Начнем заново?";
+      tryAgainButton.textContent = "Начать заново";
       errorOverlay.classList.add("visible");
     }
+    
     function restartGameFromOverlay() {
       errorOverlay.classList.remove("visible");
       restartGame();
     }
+    
     function showFinalScreen() {
       finalOverlay.classList.add("visible");
       spawnFireworks();
       playSound(winSound);
     }
+    
     function hideFinalScreen() {
       finalOverlay.classList.remove("visible");
     }
+    
     function restartGame() {
       hideFinalScreen();
+      closeZoom(); // Закрываем окно лупы, если оно было открыто
       openedTiles   = 0;
       wrongAttempts = 0;
       lastErrorTile = null;
       updateProgress();
       createTiles();
     }
+    
     function spawnFireworks() {
       const overlay = finalOverlay;
       const colors = [
@@ -1084,6 +1027,7 @@
         setTimeout(() => overlay.removeChild(fw), duration + 100);
       }
     }
+    
     startButton.addEventListener("click", () => {
       startScreen.style.display = "none";
       gameScreen.style.display  = "flex";
@@ -1092,6 +1036,7 @@
       updateProgress();
       createTiles();
     });
+    
     tryAgainButton.addEventListener("click", () => {
       if (wrongAttempts >= 3) {
         restartGameFromOverlay();
@@ -1099,6 +1044,7 @@
         hideErrorOverlay();
       }
     });
+    
     errorOverlay.addEventListener("click", e => {
       if (e.target === errorOverlay) {
         if (wrongAttempts >= 3) {
@@ -1108,30 +1054,36 @@
         }
       }
     });
+    
     playAgainButton.addEventListener("click", restartGame);
+    
     soundToggleBtn.addEventListener("click", () => {
       soundEnabled = !soundEnabled;
       soundIconEl.textContent = soundEnabled ? "🔊" : "🔈";
     });
+    
     zoomCloseBtn.addEventListener("click", closeZoom);
+    
     zoomOverlay.addEventListener("click", e => {
       if (e.target === zoomOverlay) {
         closeZoom();
       }
     });
+    
     zoomSubmitBtn.addEventListener("click", () => {
       if (zoomTileIndex === null) return;
       const tile = tilesGrid.querySelector(`.puzzle-tile[data-index="${zoomTileIndex}"]`);
       if (!tile) return;
+      
       const value = zoomInputEl.value;
-      const puzzleIndex = zoomTileIndex;
-      const correct = checkAnswer(puzzleIndex, value);
+      if (!value.trim()) return;
+      
+      const correct = checkAnswer(zoomTileIndex, value);
       if (correct) {
         tile.classList.add("flipping");
         playSound(flipSound);
         setTimeout(() => {
           tile.classList.add("disabled");
-          tile.style.pointerEvents = "none";
         }, 380);
         openedTiles++;
         updateProgress();
@@ -1153,15 +1105,18 @@
         }
       }
     });
+    
     zoomInputEl.addEventListener("keydown", e => {
       if (e.key === "Enter") {
         e.preventDefault();
         zoomSubmitBtn.click();
       }
     });
+    
     const freeModeButton = document.getElementById("freeModeButton");
     const freeOverlay    = document.getElementById("freeOverlay");
     const freeCloseBtn   = document.getElementById("freeCloseBtn");
+    
     freeModeButton.addEventListener("click", function() {
       freeOverlay.classList.add("visible");
     });
@@ -1171,6 +1126,7 @@
     freeOverlay.addEventListener("click", function(e) {
       if (e.target === freeOverlay) freeOverlay.classList.remove("visible");
     });
+    
     (function() {
       const mark = "cmFkaWF0ZWFjaGVy"; 
       const check = mark.split('').reduce((a,b)=>a+b.charCodeAt(0),0);
